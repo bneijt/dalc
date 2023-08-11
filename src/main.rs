@@ -1,77 +1,123 @@
 extern crate chrono;
+
 use chrono::prelude::*;
 use leptos::*;
 
-
-fn date_information(date: NaiveDate) -> String {
-    format!(
-        "Naive date, {}
-        week of the year: {}
-        day of the year: {}
-        ",
-        date.format("%F: %A %B %e"),
-        date.format("%U"),
-        date.format("%j"),
-    )
-}
-
-fn parse_date(input_value: String) -> String {
-    let failure_response = String::from("no banana");
-    match NaiveDate::parse_from_str(&input_value, "%Y-%m-%d") {
-        Ok(date) => date_information(date),
-        Err(_) => failure_response,
-    }
-    //take the first line
-    //If it contains a timestamp, parse the timestamp and return the iso text representation
+///Try various date and datetime formats and return the first one that works
+fn parse_input(input_value: String) -> Option<DateTime<Utc>> {
+    let parsers = [
+        |ival: &str| {
+            DateTime::parse_from_rfc3339(ival)
+                .map(|x| x.with_timezone(&Utc))
+                .ok()
+        },
+        |ival: &str| match DateTime::parse_from_str(ival, "%Y %b %d %H:%M:%S%.3f %z") {
+            Ok(date) => Some(date.with_timezone(&Utc)),
+            Err(_) => None,
+        },
+        |ival: &str| match NaiveDate::parse_from_str(ival, "%Y-%m-%d") {
+            Ok(date) => date.and_hms_opt(0, 0, 0).map(|a| a.and_utc()),
+            Err(_) => None,
+        },
+    ];
+    // Return the first not None value of trying the different parsers on the input_value
+    parsers.iter().filter_map(|f| f(&input_value)).next()
 }
 
 #[component]
-fn ControlledComponent(cx: Scope) -> impl IntoView {
+fn DateInputComponent(cx: Scope) -> impl IntoView {
     // create a signal to hold the value
-    let (name, set_name) = create_signal(cx, "Controlled".to_string());
+    let (datetime_a, set_datetime_a) = create_signal(cx, None);
 
     view! { cx,
-        <textarea 
+        <textarea
             rows=5
             autofocus=true
             on:input=move |ev| {
-                set_name(parse_date(event_target_value(&ev)));
+                // set_naive_date(parse_date(event_target_value(&ev)));
+                set_datetime_a(parse_input(event_target_value(&ev)));
             }
-            // prop:value=name
-        />
-        <pre>"Name is: " {name}</pre>
+        >"2020-01-01"</textarea>
+        <ResultComponent datetime_a=datetime_a/>
     }
 }
 
 #[component]
-pub fn SimpleCounter(cx: Scope, initial_value: i32) -> impl IntoView {
-    // create a reactive signal with the initial value
-    let (value, set_value) = create_signal(cx, initial_value);
-
-    // create event handlers for our buttons
-    // note that `value` and `set_value` are `Copy`, so it's super easy to move them into closures
-    let clear = move |_| set_value(0);
-    let decrement = move |_| set_value.update(|value| *value -= 1);
-    let increment = move |_| set_value.update(|value| *value += 1);
-
-    // create user interfaces with the declarative `view!` macro
+fn ResultComponent(cx: Scope, datetime_a: ReadSignal<Option<DateTime<Utc>>>) -> impl IntoView {
+    let now: DateTime<Utc> = Utc::now();
     view! { cx,
-        <div>
-            <button on:click=clear>"Clear"</button>
-            <button on:click=decrement>"-1"</button>
-            <span>"Value: " {value} "!"</span>
-            <button on:click=increment>"+1"</button>
-        </div>
+    <h2>"Read value"</h2>
+    <table class="pure-table">
+        <thead>
+            <tr>
+                <th>"Formatting"</th>
+                <th>"Result"</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>"ISO 8601 / RFC 3339"</td>
+                <td>{move || datetime_a.get().map(|nd| nd.to_rfc3339()).unwrap_or(String::from("?"))}</td>
+            </tr>
+            <tr>
+                <td>"RFC 2822"</td>
+                <td>{move || datetime_a.get().map(|nd| nd.to_rfc2822()).unwrap_or(String::from("?"))}</td>
+            </tr>
+            <tr>
+                <td>"Local"</td>
+                <td>{move || datetime_a.get().map(|nd| format!("{}", nd.format("%c"))).unwrap_or(String::from(""))}</td>
+            </tr>
+        </tbody>
+    </table>
+    <h2>"Calculations with value"</h2>
+    <table class="pure-table">
+        <thead>
+            <tr>
+                <th>"Relative to"</th>
+                <th>"Date"</th>
+                <th>"Time"</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td />
+                <td>{move || datetime_a.get().map(|nd| nd.format("%F").to_string()).unwrap_or(String::from("No date found"))}</td>
+                <td>{move || datetime_a.get().map(|nd| nd.to_rfc3339()).unwrap_or(String::from(""))}</td>
+            </tr>
+            <tr>
+                <td>"0"</td>
+                <td>{move || datetime_a.get().map(|nd| nd.format("%Y years").to_string()).unwrap_or(String::from(""))}</td>
+                <td />
+            </tr>
+            <tr>
+                <td>{now.to_rfc3339().to_string()}</td>
+                <td>
+                {move || datetime_a.get().map(|nd| format!("{} years", nd.signed_duration_since(now).num_days() as f64/365.242199)).unwrap_or(String::from(""))}<br/>
+                {move || datetime_a.get().map(|nd| format!("{} weeks", nd.signed_duration_since(now).num_weeks())).unwrap_or(String::from(""))}<br/>
+                {move || datetime_a.get().map(|nd| format!("{} days", nd.signed_duration_since(now).num_days())).unwrap_or(String::from(""))}
+                </td>
+                <td>
+                {move || datetime_a.get().map(|nd| format!("{} hours", nd.signed_duration_since(now).num_hours())).unwrap_or(String::from(""))}<br/>
+                {move || datetime_a.get().map(|nd| format!("{} minutes", nd.signed_duration_since(now).num_minutes())).unwrap_or(String::from(""))}<br/>
+                {move || datetime_a.get().map(|nd| format!("{} seconds", nd.signed_duration_since(now).num_seconds())).unwrap_or(String::from(""))}<br/>
+                </td>
+            </tr>
+        </tbody>
+    </table>
     }
 }
 
 #[component]
 fn App(cx: Scope) -> impl IntoView {
     view! { cx,
-        <h2>"Controlled Component"</h2>
-        <ControlledComponent/>
-        <h2>"Uncontrolled Component"</h2>
-        <SimpleCounter initial_value=3 />
+    <div class="pure-g">
+        <div class="content pure-u-1 pure-u-md-3-4">
+            <h1>"Dalc"</h1>
+            <p>"Simple date calculator. Currently shows stats on a single date only. Put any supported date/time format string into the box below:"</p>
+            <DateInputComponent/>
+            <p><a href="https://twitter.com/intent/tweet?url=https%3A//bneijt.nl/pr/dalc&amp;text=%40bneijt%20%23feedback">"Twitter for feedback"</a></p>
+        </div>
+    </div>
     }
 }
 

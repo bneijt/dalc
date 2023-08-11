@@ -37,7 +37,7 @@ fn DateInputComponent(cx: Scope) -> impl IntoView {
                 // set_naive_date(parse_date(event_target_value(&ev)));
                 set_datetime_a(parse_input(event_target_value(&ev)));
             }
-        >"2020-01-01"</textarea>
+         />
         <ResultComponent datetime_a=datetime_a/>
     }
 }
@@ -113,7 +113,9 @@ fn App(cx: Scope) -> impl IntoView {
     <div class="pure-g">
         <div class="content pure-u-1 pure-u-md-3-4">
             <h1>"Dalc"</h1>
-            <p>"Simple date calculator. Currently shows stats on a single date only. Put any supported date/time format string into the box below:"</p>
+            <p>"Simple date calculator. Currently shows stats on a single date only."
+                "Put any supported date/time format string into the box below and it will immediately calculate some values and different formatting:"
+            </p>
             <DateInputComponent/>
             <p><a href="https://twitter.com/intent/tweet?url=https%3A//bneijt.nl/pr/dalc&amp;text=%40bneijt%20%23feedback">"Twitter for feedback"</a></p>
         </div>

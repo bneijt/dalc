@@ -11,14 +11,18 @@ fn parse_input(input_value: String) -> Option<DateTime<Utc>> {
                 .map(|x| x.with_timezone(&Utc))
                 .ok()
         },
-        |ival: &str| match DateTime::parse_from_str(ival, "%Y %b %d %H:%M:%S%.3f %z") {
-            Ok(date) => Some(date.with_timezone(&Utc)),
-            Err(_) => None,
+        |ival: &str| {
+            DateTime::parse_from_rfc2822(ival)
+                .map(|x| x.with_timezone(&Utc))
+                .ok()
         },
-        |ival: &str| match NaiveDate::parse_from_str(ival, "%Y-%m-%d") {
-            Ok(date) => date.and_hms_opt(0, 0, 0).map(|a| a.and_utc()),
-            Err(_) => None,
-        },
+        |ival: &str| Utc.datetime_from_str(ival, "%Y %b %d %H:%M:%S%.3f %z").ok(),
+        |ival: &str| Utc.datetime_from_str(ival, "%Y-%m-%d %H:%M:%S").ok(),
+        |ival: &str| DateTime::parse_from_str(ival, "%e/%b/%Y:%T %z").ok().map(|x| x.with_timezone(&Utc)),
+        |ival: &str| Utc.datetime_from_str(ival, "%e/%b/%Y:%T").ok(),
+        |ival: &str| Utc.datetime_from_str(ival, "%a %b %e %T %Y").ok(),
+        |ival: &str| NaiveDate::parse_from_str(ival, "%Y-%m-%d").ok().map(|x| x.and_time(NaiveTime::MIN).and_utc()),
+        |ival: &str| Utc.datetime_from_str(ival, "%s").ok(),
     ];
     // Return the first not None value of trying the different parsers on the input_value
     parsers.iter().filter_map(|f| f(&input_value)).next()
@@ -28,17 +32,28 @@ fn parse_input(input_value: String) -> Option<DateTime<Utc>> {
 fn DateInputComponent(cx: Scope) -> impl IntoView {
     // create a signal to hold the value
     let (datetime_a, set_datetime_a) = create_signal(cx, None);
+    let page_load: DateTime<Utc> = Utc::now();
 
     view! { cx,
-        <textarea
-            rows=5
-            autofocus=true
+    <fieldset class="flex two">
+        <label>
+        <input type="text" placeholder="Date time A, 2020-01-01"
             on:input=move |ev| {
                 // set_naive_date(parse_date(event_target_value(&ev)));
                 set_datetime_a(parse_input(event_target_value(&ev)));
             }
-         />
-        <ResultComponent datetime_a=datetime_a/>
+        />
+        </label>
+
+    </fieldset>
+     <button
+        style="font-size: x-small;"
+        on:click=move |_| {
+            set_datetime_a(Some(page_load));
+        }
+    >"Use page load time"</button>
+    <br/>
+    <ResultComponent datetime_a=datetime_a/>
     }
 }
 
@@ -46,7 +61,7 @@ fn DateInputComponent(cx: Scope) -> impl IntoView {
 fn ResultComponent(cx: Scope, datetime_a: ReadSignal<Option<DateTime<Utc>>>) -> impl IntoView {
     let now: DateTime<Utc> = Utc::now();
     view! { cx,
-    <h2>"Read value"</h2>
+    <h2>"Value parsed from input"</h2>
     <table class="pure-table">
         <thead>
             <tr>
@@ -67,6 +82,18 @@ fn ResultComponent(cx: Scope, datetime_a: ReadSignal<Option<DateTime<Utc>>>) -> 
                 <td>"Local"</td>
                 <td>{move || datetime_a.get().map(|nd| format!("{}", nd.format("%c"))).unwrap_or(String::from(""))}</td>
             </tr>
+            <tr>
+                <td>"UNIX timestamp"</td>
+                <td>{move || datetime_a.get().map(|nd| format!("{}", nd.format("%s"))).unwrap_or(String::from(""))}</td>
+            </tr>
+            <tr>
+                <td>"English"</td>
+                <td>{move || datetime_a.get().map(|nd| format!("{}", nd.format("%v %r"))).unwrap_or(String::from(""))}</td>
+            </tr>
+            <tr>
+                <td>"Local"</td>
+                <td>{move || datetime_a.get().map(|nd| format!("{}", nd.format("%c"))).unwrap_or(String::from(""))}</td>
+            </tr>
         </tbody>
     </table>
     <h2>"Calculations with value"</h2>
@@ -80,15 +107,34 @@ fn ResultComponent(cx: Scope, datetime_a: ReadSignal<Option<DateTime<Utc>>>) -> 
         </thead>
         <tbody>
             <tr>
-                <td />
-                <td>{move || datetime_a.get().map(|nd| nd.format("%F").to_string()).unwrap_or(String::from("No date found"))}</td>
-                <td>{move || datetime_a.get().map(|nd| nd.to_rfc3339()).unwrap_or(String::from(""))}</td>
+                <td>"0"</td>
+                <td>
+                {move || datetime_a.get().map(|nd| nd.format("%Y years").to_string()).unwrap_or(String::from(""))}<br/>
+                {move || datetime_a.get().map(|nd| format!("{} weeks", nd.year() as f64 * 52.177457)).unwrap_or(String::from(""))} <br/>
+                {move || datetime_a.get().map(|nd| format!("{} days", nd.year() as f64 * 365.242199)).unwrap_or(String::from(""))} <br/>
+                </td>
+                <td>
+                {move || datetime_a.get().map(|nd| format!("{} hours", nd.year() as f64 * 8765.81277)).unwrap_or(String::from(""))} <br/>
+                {move || datetime_a.get().map(|nd| format!("{} minutes", nd.year() as f64 * 525948.7662)).unwrap_or(String::from(""))} <br/>
+                {move || datetime_a.get().map(|nd| format!("{} seconds", nd.year() as f64 * 31556926.0)).unwrap_or(String::from(""))} <br/>
+                </td>
             </tr>
             <tr>
-                <td>"0"</td>
-                <td>{move || datetime_a.get().map(|nd| nd.format("%Y years").to_string()).unwrap_or(String::from(""))}</td>
+                <td>"1970-01-01 00:00 UTC (epoch)"</td>
                 <td />
+                <td>{move || datetime_a.get().map(|nd| nd.format("%s seconds").to_string()).unwrap_or(String::from(""))}</td>
             </tr>
+            <tr>
+                <td>
+                {move || datetime_a.get().map(|nd| nd.format("%F").to_string()).unwrap_or(String::from("?"))}
+                </td>
+                <td />
+                <td>
+                {move || datetime_a.get().map(|nd| format!("{} seconds since midnight", nd.num_seconds_from_midnight())).unwrap_or(String::from(""))}<br/>
+                </td>
+                
+            </tr>
+
             <tr>
                 <td>{now.to_rfc3339().to_string()}</td>
                 <td>
@@ -110,16 +156,19 @@ fn ResultComponent(cx: Scope, datetime_a: ReadSignal<Option<DateTime<Utc>>>) -> 
 #[component]
 fn App(cx: Scope) -> impl IntoView {
     view! { cx,
-    <div class="pure-g">
-        <div class="content pure-u-1 pure-u-md-3-4">
-            <h1>"Dalc"</h1>
-            <p>"Simple date calculator. Currently shows stats on a single date only."
-                "Put any supported date/time format string into the box below and it will immediately calculate some values and different formatting:"
-            </p>
-            <DateInputComponent/>
-            <p><a href="https://twitter.com/intent/tweet?url=https%3A//bneijt.nl/pr/dalc&amp;text=%40bneijt%20%23feedback">"Twitter for feedback"</a></p>
+        <main class="flex two center">
+        <div>
+                <h1>"Dalc"</h1>
+                <p>
+                "Simple date calculator, just fill in a datetime string."
+                </p><p>
+                " Current input formats include ISO 8601, RFC 3339, RFC 2822, epoch timestamp, and others."
+                " Put any supported date/time format string into the box below, and it will immediately calculate some values and different formatting:"
+                </p>
+                <DateInputComponent/>
+                <p><a href="https://twitter.com/intent/tweet?url=https%3A//bneijt.nl/pr/dalc&amp;text=%40bneijt%20%23feedback">"Twitter for feedback"</a></p>
         </div>
-    </div>
+        </main>
     }
 }
 

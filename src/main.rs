@@ -156,7 +156,8 @@ fn ResultComponent(cx: Scope, datetime_a: ReadSignal<Option<DateTime<Utc>>>) -> 
 #[component]
 fn App(cx: Scope) -> impl IntoView {
     view! { cx,
-        <main class="flex two center">
+        <main style="padding-left: 2em">
+        <section class="flex one center" >
         <div>
                 <h1>"Dalc"</h1>
                 <p>
@@ -168,6 +169,7 @@ fn App(cx: Scope) -> impl IntoView {
                 <DateInputComponent/>
                 <p><a href="https://twitter.com/intent/tweet?url=https%3A//bneijt.nl/pr/dalc&amp;text=%40bneijt%20%23feedback">"Twitter for feedback"</a></p>
         </div>
+        </section>
         </main>
     }
 }

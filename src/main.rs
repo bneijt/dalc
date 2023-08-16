@@ -18,6 +18,7 @@ fn parse_input(input_value: String) -> Option<DateTime<Utc>> {
         },
         |ival: &str| Utc.datetime_from_str(ival, "%Y %b %d %H:%M:%S%.3f %z").ok(),
         |ival: &str| Utc.datetime_from_str(ival, "%Y-%m-%d %H:%M:%S").ok(),
+        |ival: &str| Utc.datetime_from_str(ival, "%Y-%m-%d %H:%M").ok(),
         |ival: &str| DateTime::parse_from_str(ival, "%e/%b/%Y:%T %z").ok().map(|x| x.with_timezone(&Utc)),
         |ival: &str| Utc.datetime_from_str(ival, "%e/%b/%Y:%T").ok(),
         |ival: &str| Utc.datetime_from_str(ival, "%a %b %e %T %Y").ok(),

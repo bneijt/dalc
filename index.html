@@ -1,38 +1,92 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
-    <link rel="stylesheet" href="https://bneijt.nl/main.css">
+    <link rel="stylesheet" href="https://bneijt.nl/main.css" />
     <title>dalc simple online date calculator</title>
-    <link rel="canonical" href="https://bneijt.nl/pr/dalc/">
-    <meta name="author" content="Bram Neijt">
-    <meta charset="utf-8">
+    <link rel="canonical" href="https://bneijt.nl/pr/dalc/" />
+    <meta name="author" content="Bram Neijt" />
+    <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="shortcut icon" type="image/png" href="/favicon.png">
-    <link rel="icon" sizes="192x192" href="/touch-icon-192x192.png">
-    <link rel="apple-touch-icon-precomposed" sizes="180x180" href="/apple-touch-icon-180x180-precomposed.png">
-    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="/apple-touch-icon-152x152-precomposed.png">
-    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144x144-precomposed.png">
-    <link rel="apple-touch-icon-precomposed" sizes="120x120" href="/apple-touch-icon-120x120-precomposed.png">
-    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="/apple-touch-icon-114x114-precomposed.png">
-    <link rel="apple-touch-icon-precomposed" sizes="76x76" href="/apple-touch-icon-76x76-precomposed.png">
-    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="/apple-touch-icon-72x72-precomposed.png">
-    <link rel="apple-touch-icon-precomposed" href="/apple-touch-icon-precomposed.png">
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-    <meta property="og:locale" content="en_US">
-    <meta name="twitter:site" content="@bneijt">
-  
-    <style>
-.content {
-  padding: 2em 1em 0;
-}
+    <link rel="shortcut icon" type="image/png" href="/favicon.png" />
+    <link rel="icon" sizes="192x192" href="/touch-icon-192x192.png" />
+    <link
+      rel="apple-touch-icon-precomposed"
+      sizes="180x180"
+      href="/apple-touch-icon-180x180-precomposed.png"
+    />
+    <link
+      rel="apple-touch-icon-precomposed"
+      sizes="152x152"
+      href="/apple-touch-icon-152x152-precomposed.png"
+    />
+    <link
+      rel="apple-touch-icon-precomposed"
+      sizes="144x144"
+      href="/apple-touch-icon-144x144-precomposed.png"
+    />
+    <link
+      rel="apple-touch-icon-precomposed"
+      sizes="120x120"
+      href="/apple-touch-icon-120x120-precomposed.png"
+    />
+    <link
+      rel="apple-touch-icon-precomposed"
+      sizes="114x114"
+      href="/apple-touch-icon-114x114-precomposed.png"
+    />
+    <link
+      rel="apple-touch-icon-precomposed"
+      sizes="76x76"
+      href="/apple-touch-icon-76x76-precomposed.png"
+    />
+    <link
+      rel="apple-touch-icon-precomposed"
+      sizes="72x72"
+      href="/apple-touch-icon-72x72-precomposed.png"
+    />
+    <link
+      rel="apple-touch-icon-precomposed"
+      href="/apple-touch-icon-precomposed.png"
+    />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta property="og:locale" content="en_US" />
+    <meta name="twitter:site" content="@bneijt" />
 
-@media (min-width: 48em) {
-    .content {
-        padding: 2em 3em 0;
-        margin-left: 25%;
-    }
-}
+    <style>
+      .content {
+        padding: 2em 1em 0;
+      }
+
+      @media (min-width: 48em) {
+        .content {
+          padding: 2em 3em 0;
+          margin-left: 25%;
+        }
+      }
     </style>
   </head>
-  <body></body>
+  <body>
+    <main style="padding-left: 2em">
+      <section class="flex one center">
+        <div>
+          <h1>Dalc</h1>
+          <p>Simple date calculator, just fill in a datetime string.</p>
+          <p>
+            Current input formats include ISO 8601, RFC 3339, RFC 2822, epoch
+            timestamp, and others." " Put any supported date/time format string
+            into the box below, and it will immediately calculate some values
+            and different formatting:
+          </p>
+          <div id="app" />
+          <p>
+            <a
+              href="https://twitter.com/intent/tweet?url=https%3A//bneijt.nl/pr/dalc&amp;text=%40bneijt%20%23feedback"
+            >
+              Twitter for feedback
+            </a>
+          </p>
+        </div>
+      </section>
+    </main>
+  </body>
 </html>

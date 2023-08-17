@@ -1,5 +1,6 @@
 extern crate chrono;
-
+use wasm_bindgen::JsCast;
+use web_sys::HtmlElement;
 use chrono::prelude::*;
 use leptos::*;
 
@@ -41,7 +42,7 @@ fn DateInputComponent(cx: Scope) -> impl IntoView {
         <input type="text" placeholder="Date time A, 2020-01-01"
             on:input=move |ev| {
                 // set_naive_date(parse_date(event_target_value(&ev)));
-                set_datetime_a(parse_input(event_target_value(&ev)));
+                set_datetime_a(parse_input(event_target_value(&ev).trim().to_string()));
             }
         />
         </label>
@@ -157,24 +158,12 @@ fn ResultComponent(cx: Scope, datetime_a: ReadSignal<Option<DateTime<Utc>>>) -> 
 #[component]
 fn App(cx: Scope) -> impl IntoView {
     view! { cx,
-        <main style="padding-left: 2em">
-        <section class="flex one center" >
-        <div>
-                <h1>"Dalc"</h1>
-                <p>
-                "Simple date calculator, just fill in a datetime string."
-                </p><p>
-                " Current input formats include ISO 8601, RFC 3339, RFC 2822, epoch timestamp, and others."
-                " Put any supported date/time format string into the box below, and it will immediately calculate some values and different formatting:"
-                </p>
-                <DateInputComponent/>
-                <p><a href="https://twitter.com/intent/tweet?url=https%3A//bneijt.nl/pr/dalc&amp;text=%40bneijt%20%23feedback">"Twitter for feedback"</a></p>
-        </div>
-        </section>
-        </main>
+        <DateInputComponent/>
     }
 }
 
 fn main() {
-    leptos::mount_to_body(|cx| view! { cx, <App/> })
+    let app_element = leptos::document().get_element_by_id("app").unwrap();
+    leptos::mount_to(app_element.dyn_into::<HtmlElement>().unwrap(), |cx| view! { cx, <App/> });
+    // leptos::mount_to_body(|cx| view! { cx, <App/> })
 }

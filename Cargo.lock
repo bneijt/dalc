@@ -283,6 +283,8 @@ version = "0.1.0"
 dependencies = [
  "chrono",
  "leptos",
+ "wasm-bindgen",
+ "web-sys",
 ]
 
 [[package]]

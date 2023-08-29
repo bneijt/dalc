@@ -116,15 +116,19 @@ fn ResultComponent(cx: Scope, datetime_a: ReadSignal<Option<DateTime<Utc>>>) -> 
                 {move || datetime_a.get().map(|nd| format!("{} days", nd.year() as f64 * 365.242199)).unwrap_or(String::from(""))} <br/>
                 </td>
                 <td>
-                {move || datetime_a.get().map(|nd| format!("{} hours", nd.year() as f64 * 8765.81277)).unwrap_or(String::from(""))} <br/>
-                {move || datetime_a.get().map(|nd| format!("{} minutes", nd.year() as f64 * 525948.7662)).unwrap_or(String::from(""))} <br/>
-                {move || datetime_a.get().map(|nd| format!("{} seconds", nd.year() as f64 * 31556926.0)).unwrap_or(String::from(""))} <br/>
+                {move || datetime_a.get().map(|nd| format!("{:.3} hours", nd.year() as f64 * 8765.81277)).unwrap_or(String::from(""))} <br/>
+                {move || datetime_a.get().map(|nd| format!("{:.3} minutes", nd.year() as f64 * 525948.7662)).unwrap_or(String::from(""))} <br/>
+                {move || datetime_a.get().map(|nd| format!("{:.3} seconds", nd.year() as f64 * 31556926.0)).unwrap_or(String::from(""))} <br/>
                 </td>
             </tr>
             <tr>
                 <td>"1970-01-01 00:00 UTC (epoch)"</td>
                 <td />
-                <td>{move || datetime_a.get().map(|nd| nd.format("%s seconds").to_string()).unwrap_or(String::from(""))}</td>
+                <td>
+                {move || datetime_a.get().map(|nd| format!("{:.3} hours", nd.timestamp() as f64 / 3600.0)).unwrap_or(String::from(""))}<br/>
+                {move || datetime_a.get().map(|nd| format!("{:.3} minutes", nd.timestamp() as f64 / 60.0)).unwrap_or(String::from(""))}<br/>
+                {move || datetime_a.get().map(|nd| format!("{} seconds", nd.timestamp())).unwrap_or(String::from(""))}<br/>
+                </td>
             </tr>
             <tr>
                 <td>
@@ -132,6 +136,8 @@ fn ResultComponent(cx: Scope, datetime_a: ReadSignal<Option<DateTime<Utc>>>) -> 
                 </td>
                 <td />
                 <td>
+                {move || datetime_a.get().map(|nd| format!("{:.3} hours since midnight", nd.num_seconds_from_midnight() as f64 / 3600.0)).unwrap_or(String::from(""))}<br/>
+                {move || datetime_a.get().map(|nd| format!("{:.3} minutes since midnight", nd.num_seconds_from_midnight() as f64 / 60.0)).unwrap_or(String::from(""))}<br/>
                 {move || datetime_a.get().map(|nd| format!("{} seconds since midnight", nd.num_seconds_from_midnight())).unwrap_or(String::from(""))}<br/>
                 </td>
                 
@@ -140,7 +146,7 @@ fn ResultComponent(cx: Scope, datetime_a: ReadSignal<Option<DateTime<Utc>>>) -> 
             <tr>
                 <td>{now.to_rfc3339().to_string()}</td>
                 <td>
-                {move || datetime_a.get().map(|nd| format!("{} years", nd.signed_duration_since(now).num_days() as f64/365.242199)).unwrap_or(String::from(""))}<br/>
+                {move || datetime_a.get().map(|nd| format!("{:.3} years", nd.signed_duration_since(now).num_days() as f64/365.242199)).unwrap_or(String::from(""))}<br/>
                 {move || datetime_a.get().map(|nd| format!("{} weeks", nd.signed_duration_since(now).num_weeks())).unwrap_or(String::from(""))}<br/>
                 {move || datetime_a.get().map(|nd| format!("{} days", nd.signed_duration_since(now).num_days())).unwrap_or(String::from(""))}
                 </td>

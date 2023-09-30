@@ -1,8 +1,9 @@
 extern crate chrono;
+use chrono::prelude::*;
+use chrono::{DateTime, Utc};
+use leptos::*;
 use wasm_bindgen::JsCast;
 use web_sys::HtmlElement;
-use chrono::prelude::*;
-use leptos::*;
 
 ///Try various date and datetime formats and return the first one that works
 fn parse_input(input_value: String) -> Option<DateTime<Utc>> {
@@ -20,11 +21,31 @@ fn parse_input(input_value: String) -> Option<DateTime<Utc>> {
         |ival: &str| Utc.datetime_from_str(ival, "%Y %b %d %H:%M:%S%.3f %z").ok(),
         |ival: &str| Utc.datetime_from_str(ival, "%Y-%m-%d %H:%M:%S").ok(),
         |ival: &str| Utc.datetime_from_str(ival, "%Y-%m-%d %H:%M").ok(),
-        |ival: &str| DateTime::parse_from_str(ival, "%e/%b/%Y:%T %z").ok().map(|x| x.with_timezone(&Utc)),
+        |ival: &str| {
+            DateTime::parse_from_str(ival, "%e/%b/%Y:%T %z")
+                .ok()
+                .map(|x| x.with_timezone(&Utc))
+        },
         |ival: &str| Utc.datetime_from_str(ival, "%e/%b/%Y:%T").ok(),
         |ival: &str| Utc.datetime_from_str(ival, "%a %b %e %T %Y").ok(),
-        |ival: &str| NaiveDate::parse_from_str(ival, "%Y-%m-%d").ok().map(|x| x.and_time(NaiveTime::MIN).and_utc()),
-        |ival: &str| Utc.datetime_from_str(ival, "%s").ok(),
+        |ival: &str| {
+            NaiveDate::parse_from_str(ival, "%Y-%m-%d")
+                .ok()
+                .map(|x| x.and_time(NaiveTime::MIN).and_utc())
+        },
+        |ival: &str| {
+            // If the length of the string is > 13 numbers, we should try milliseconds
+            match ival.parse::<i64>() {
+                Ok(n) => {
+                    if ival.len() > 12 {
+                        Utc.timestamp_millis_opt(n).single()
+                    } else {
+                        Utc.timestamp_opt(n, 0).single()
+                    }
+                }
+                Err(_) => None,
+            }
+        },
     ];
     // Return the first not None value of trying the different parsers on the input_value
     parsers.iter().filter_map(|f| f(&input_value)).next()
@@ -112,8 +133,8 @@ fn ResultComponent(cx: Scope, datetime_a: ReadSignal<Option<DateTime<Utc>>>) -> 
                 <td>"0"</td>
                 <td>
                 {move || datetime_a.get().map(|nd| nd.format("%Y years").to_string()).unwrap_or(String::from(""))}<br/>
-                {move || datetime_a.get().map(|nd| format!("{} weeks", nd.year() as f64 * 52.177457)).unwrap_or(String::from(""))} <br/>
-                {move || datetime_a.get().map(|nd| format!("{} days", nd.year() as f64 * 365.242199)).unwrap_or(String::from(""))} <br/>
+                {move || datetime_a.get().map(|nd| format!("{:.3} weeks", nd.year() as f64 * 52.177457)).unwrap_or(String::from(""))} <br/>
+                {move || datetime_a.get().map(|nd| format!("{:.3} days", nd.year() as f64 * 365.242199)).unwrap_or(String::from(""))} <br/>
                 </td>
                 <td>
                 {move || datetime_a.get().map(|nd| format!("{:.3} hours", nd.year() as f64 * 8765.81277)).unwrap_or(String::from(""))} <br/>
@@ -140,7 +161,7 @@ fn ResultComponent(cx: Scope, datetime_a: ReadSignal<Option<DateTime<Utc>>>) -> 
                 {move || datetime_a.get().map(|nd| format!("{:.3} minutes since midnight", nd.num_seconds_from_midnight() as f64 / 60.0)).unwrap_or(String::from(""))}<br/>
                 {move || datetime_a.get().map(|nd| format!("{} seconds since midnight", nd.num_seconds_from_midnight())).unwrap_or(String::from(""))}<br/>
                 </td>
-                
+
             </tr>
 
             <tr>
@@ -170,6 +191,9 @@ fn App(cx: Scope) -> impl IntoView {
 
 fn main() {
     let app_element = leptos::document().get_element_by_id("app").unwrap();
-    leptos::mount_to(app_element.dyn_into::<HtmlElement>().unwrap(), |cx| view! { cx, <App/> });
+    leptos::mount_to(
+        app_element.dyn_into::<HtmlElement>().unwrap(),
+        |cx| view! { cx, <App/> },
+    );
     // leptos::mount_to_body(|cx| view! { cx, <App/> })
 }

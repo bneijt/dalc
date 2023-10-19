@@ -125,56 +125,89 @@ fn ResultComponent(cx: Scope, datetime_a: ReadSignal<Option<DateTime<Utc>>>) -> 
             <tr>
                 <th>"Relative to"</th>
                 <th>"Date"</th>
+                <th>"unit"</th>
                 <th>"Time"</th>
+                <th>"unit"</th>
             </tr>
         </thead>
         <tbody>
             <tr>
                 <td>"0"</td>
-                <td>
-                {move || datetime_a.get().map(|nd| nd.format("%Y years").to_string()).unwrap_or(String::from(""))}<br/>
-                {move || datetime_a.get().map(|nd| format!("{:.3} weeks", nd.year() as f64 * 52.177457)).unwrap_or(String::from(""))} <br/>
-                {move || datetime_a.get().map(|nd| format!("{:.3} days", nd.year() as f64 * 365.242199)).unwrap_or(String::from(""))} <br/>
+                <td class="ra">
+                {move || datetime_a.get().map(|nd| nd.format("%Y").to_string()).unwrap_or(String::from(""))}<br/>
+                {move || datetime_a.get().map(|nd| format!("{:.3}", nd.year() as f64 * 52.177457)).unwrap_or(String::from(""))} <br/>
+                {move || datetime_a.get().map(|nd| format!("{:.3}", nd.year() as f64 * 365.242199)).unwrap_or(String::from(""))} <br/>
                 </td>
                 <td>
-                {move || datetime_a.get().map(|nd| format!("{:.3} hours", nd.year() as f64 * 8765.81277)).unwrap_or(String::from(""))} <br/>
-                {move || datetime_a.get().map(|nd| format!("{:.3} minutes", nd.year() as f64 * 525948.7662)).unwrap_or(String::from(""))} <br/>
-                {move || datetime_a.get().map(|nd| format!("{:.3} seconds", nd.year() as f64 * 31556926.0)).unwrap_or(String::from(""))} <br/>
+                "years"<br />
+                "weeks"<br />
+                "days"<br />
+                </td>
+                <td class="ra">
+                {move || datetime_a.get().map(|nd| format!("{:.3}", nd.year() as f64 * 8765.81277)).unwrap_or(String::from(""))}<br/>
+                {move || datetime_a.get().map(|nd| format!("{:.3}", nd.year() as f64 * 525948.7662)).unwrap_or(String::from(""))}<br/>
+                {move || datetime_a.get().map(|nd| format!("{:.3}", nd.year() as f64 * 31556926.0)).unwrap_or(String::from(""))}<br/>
+                </td>
+                <td>
+                "hours"<br />
+                "minutes"<br />
+                "seconds"<br />
                 </td>
             </tr>
             <tr>
                 <td>"1970-01-01 00:00 UTC (epoch)"</td>
                 <td />
+                <td />
+                <td class="ra">
+                {move || datetime_a.get().map(|nd| format!("{:.3}", nd.timestamp() as f64 / 3600.0)).unwrap_or(String::from(""))}<br/>
+                {move || datetime_a.get().map(|nd| format!("{:.3}", nd.timestamp() as f64 / 60.0)).unwrap_or(String::from(""))}<br/>
+                {move || datetime_a.get().map(|nd| format!("{}", nd.timestamp())).unwrap_or(String::from(""))}<br/>
+                </td>
                 <td>
-                {move || datetime_a.get().map(|nd| format!("{:.3} hours", nd.timestamp() as f64 / 3600.0)).unwrap_or(String::from(""))}<br/>
-                {move || datetime_a.get().map(|nd| format!("{:.3} minutes", nd.timestamp() as f64 / 60.0)).unwrap_or(String::from(""))}<br/>
-                {move || datetime_a.get().map(|nd| format!("{} seconds", nd.timestamp())).unwrap_or(String::from(""))}<br/>
+                "hours"<br />
+                "minutes"<br />
+                "seconds"<br />
                 </td>
             </tr>
             <tr>
-                <td>
+                <td class="ra">
                 {move || datetime_a.get().map(|nd| nd.format("%F").to_string()).unwrap_or(String::from("?"))}
                 </td>
                 <td />
-                <td>
-                {move || datetime_a.get().map(|nd| format!("{:.3} hours since midnight", nd.num_seconds_from_midnight() as f64 / 3600.0)).unwrap_or(String::from(""))}<br/>
-                {move || datetime_a.get().map(|nd| format!("{:.3} minutes since midnight", nd.num_seconds_from_midnight() as f64 / 60.0)).unwrap_or(String::from(""))}<br/>
-                {move || datetime_a.get().map(|nd| format!("{} seconds since midnight", nd.num_seconds_from_midnight())).unwrap_or(String::from(""))}<br/>
+                <td />
+                <td class="ra">
+                {move || datetime_a.get().map(|nd| format!("{:.3}", nd.num_seconds_from_midnight() as f64 / 3600.0)).unwrap_or(String::from(""))}<br/>
+                {move || datetime_a.get().map(|nd| format!("{:.3}", nd.num_seconds_from_midnight() as f64 / 60.0)).unwrap_or(String::from(""))}<br/>
+                {move || datetime_a.get().map(|nd| format!("{}", nd.num_seconds_from_midnight())).unwrap_or(String::from(""))}<br/>
                 </td>
-
+                <td>
+                "hours since midnight"<br />
+                "minutes since midnight"<br />
+                "seconds since midnight"<br />
+                </td>
             </tr>
 
             <tr>
                 <td>{now.to_rfc3339().to_string()}</td>
-                <td>
-                {move || datetime_a.get().map(|nd| format!("{:.3} years", nd.signed_duration_since(now).num_days() as f64/365.242199)).unwrap_or(String::from(""))}<br/>
-                {move || datetime_a.get().map(|nd| format!("{} weeks", nd.signed_duration_since(now).num_weeks())).unwrap_or(String::from(""))}<br/>
-                {move || datetime_a.get().map(|nd| format!("{} days", nd.signed_duration_since(now).num_days())).unwrap_or(String::from(""))}
+                <td class="ra">
+                {move || datetime_a.get().map(|nd| format!("{:.3}", nd.signed_duration_since(now).num_days() as f64/365.242199)).unwrap_or(String::from(""))}<br/>
+                {move || datetime_a.get().map(|nd| format!("{}", nd.signed_duration_since(now).num_weeks())).unwrap_or(String::from(""))}<br/>
+                {move || datetime_a.get().map(|nd| format!("{}", nd.signed_duration_since(now).num_days())).unwrap_or(String::from(""))}
                 </td>
                 <td>
-                {move || datetime_a.get().map(|nd| format!("{} hours", nd.signed_duration_since(now).num_hours())).unwrap_or(String::from(""))}<br/>
-                {move || datetime_a.get().map(|nd| format!("{} minutes", nd.signed_duration_since(now).num_minutes())).unwrap_or(String::from(""))}<br/>
-                {move || datetime_a.get().map(|nd| format!("{} seconds", nd.signed_duration_since(now).num_seconds())).unwrap_or(String::from(""))}<br/>
+                "years"<br />
+                "weeks"<br />
+                "days"<br />
+                </td>
+                <td class="ra">
+                {move || datetime_a.get().map(|nd| format!("{}", nd.signed_duration_since(now).num_hours())).unwrap_or(String::from(""))}<br/>
+                {move || datetime_a.get().map(|nd| format!("{}", nd.signed_duration_since(now).num_minutes())).unwrap_or(String::from(""))}<br/>
+                {move || datetime_a.get().map(|nd| format!("{}", nd.signed_duration_since(now).num_seconds())).unwrap_or(String::from(""))}<br/>
+                </td>
+                <td>
+                "hours"<br />
+                "minutes"<br />
+                "seconds"<br />
                 </td>
             </tr>
         </tbody>

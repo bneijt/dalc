@@ -7,6 +7,7 @@ use web_sys::HtmlElement;
 
 ///Try various date and datetime formats and return the first one that works
 fn parse_input(input_value: String) -> Option<DateTime<Utc>> {
+    print!("parse_input: {}", input_value);
     let parsers = [
         |ival: &str| {
             DateTime::parse_from_rfc3339(ival)
@@ -55,34 +56,44 @@ fn parse_input(input_value: String) -> Option<DateTime<Utc>> {
 fn DateInputComponent(cx: Scope) -> impl IntoView {
     // create a signal to hold the value
     let (datetime_a, set_datetime_a) = create_signal(cx, None);
+    let (datetime_b, set_datetime_b) = create_signal(cx, None);
     let page_load: DateTime<Utc> = Utc::now();
+    // set_datetime_b(Some(page_load.clone()));
 
     view! { cx,
     <fieldset class="flex two">
         <label>
-        <input type="text" placeholder="Date time A, 2020-01-01"
-            on:input=move |ev| {
-                // set_naive_date(parse_date(event_target_value(&ev)));
-                set_datetime_a(parse_input(event_target_value(&ev).trim().to_string()));
-            }
-        />
+            <input type="text" placeholder="Date time, 2020-01-01"
+                on:input=move |ev| {
+                    set_datetime_a(parse_input(event_target_value(&ev).trim().to_string()));
+                }
+            />
         </label>
+        <label>
+            <input type="text" placeholder="Relative to date time (defaults to page load time)"
+                on:input=move |ev| {
+                    set_datetime_b(parse_input(event_target_value(&ev).trim().to_string()));
+                }
+            />
+        </label>
+    <br/>
+    <button style="font-size: x-small;"
+    on:click=move |_| {
+        set_datetime_a(Some(page_load));
+    } >"Use page load time"</button>
 
     </fieldset>
-     <button
-        style="font-size: x-small;"
-        on:click=move |_| {
-            set_datetime_a(Some(page_load));
-        }
-    >"Use page load time"</button>
-    <br/>
-    <ResultComponent datetime_a=datetime_a/>
+    <ResultComponent datetime_a=datetime_a datetime_b=datetime_b />
     }
 }
 
 #[component]
-fn ResultComponent(cx: Scope, datetime_a: ReadSignal<Option<DateTime<Utc>>>) -> impl IntoView {
-    let now: DateTime<Utc> = Utc::now();
+fn ResultComponent(
+    cx: Scope,
+    datetime_a: ReadSignal<Option<DateTime<Utc>>>,
+    datetime_b: ReadSignal<Option<DateTime<Utc>>>,
+) -> impl IntoView {
+    let now = Utc::now();
     view! { cx,
     <h2>"Value parsed from input"</h2>
     <table class="pure-table">
@@ -188,11 +199,11 @@ fn ResultComponent(cx: Scope, datetime_a: ReadSignal<Option<DateTime<Utc>>>) -> 
             </tr>
 
             <tr>
-                <td>{now.to_rfc3339().to_string()}</td>
+                <td>{move || datetime_b.get().unwrap_or(now).to_rfc3339().to_string()}</td>
                 <td class="ra">
-                {move || datetime_a.get().map(|nd| format!("{:.3}", nd.signed_duration_since(now).num_days() as f64/365.242199)).unwrap_or(String::from(""))}<br/>
-                {move || datetime_a.get().map(|nd| format!("{}", nd.signed_duration_since(now).num_weeks())).unwrap_or(String::from(""))}<br/>
-                {move || datetime_a.get().map(|nd| format!("{}", nd.signed_duration_since(now).num_days())).unwrap_or(String::from(""))}
+                {move || datetime_a.get().map(|nd| format!("{:.3}", nd.signed_duration_since(datetime_b.get().unwrap_or(now)).num_days() as f64/365.242199)).unwrap_or(String::from(""))}<br/>
+                {move || datetime_a.get().map(|nd| format!("{}", nd.signed_duration_since(datetime_b.get().unwrap_or(now)).num_weeks())).unwrap_or(String::from(""))}<br/>
+                {move || datetime_a.get().map(|nd| format!("{}", nd.signed_duration_since(datetime_b.get().unwrap_or(now)).num_days())).unwrap_or(String::from(""))}
                 </td>
                 <td>
                 "years"<br />
@@ -200,9 +211,9 @@ fn ResultComponent(cx: Scope, datetime_a: ReadSignal<Option<DateTime<Utc>>>) -> 
                 "days"<br />
                 </td>
                 <td class="ra">
-                {move || datetime_a.get().map(|nd| format!("{}", nd.signed_duration_since(now).num_hours())).unwrap_or(String::from(""))}<br/>
-                {move || datetime_a.get().map(|nd| format!("{}", nd.signed_duration_since(now).num_minutes())).unwrap_or(String::from(""))}<br/>
-                {move || datetime_a.get().map(|nd| format!("{}", nd.signed_duration_since(now).num_seconds())).unwrap_or(String::from(""))}<br/>
+                {move || datetime_a.get().map(|nd| format!("{}", nd.signed_duration_since(datetime_b.get().unwrap_or(now)).num_hours())).unwrap_or(String::from(""))}<br/>
+                {move || datetime_a.get().map(|nd| format!("{}", nd.signed_duration_since(datetime_b.get().unwrap_or(now)).num_minutes())).unwrap_or(String::from(""))}<br/>
+                {move || datetime_a.get().map(|nd| format!("{}", nd.signed_duration_since(datetime_b.get().unwrap_or(now)).num_seconds())).unwrap_or(String::from(""))}<br/>
                 </td>
                 <td>
                 "hours"<br />
